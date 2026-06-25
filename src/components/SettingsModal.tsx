@@ -1,6 +1,7 @@
 import { useAppStore } from '../lib/store';
 import { themes } from '../lib/theme';
 import { useState } from 'react';
+import React from 'react';
 
 type SettingsTab = 'appearance' | 'terminal' | 'keybindings';
 
@@ -22,7 +23,7 @@ export default function SettingsPanel() {
 
   if (!isSettingsOpen) return null;
 
-  const tabs: { id: SettingsTab; label: string; icon: JSX.Element }[] = [
+  const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
     {
       id: 'appearance',
       label: 'Appearance',

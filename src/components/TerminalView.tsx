@@ -134,7 +134,7 @@ export default function TerminalView({ tabId, paneId, initialCwd }: TerminalView
               if (state.activeTabId && paneId) state.closePane(paneId);
             }
             else if (key === 'd') {
-              if (state.activeTabId && paneId) state.splitPane(paneId, event.shiftKey ? 'horizontal' : 'vertical');
+              if (state.activeTabId && paneId) state.splitPane(event.shiftKey ? 'horizontal' : 'vertical');
             }
             else if (key === 'k') state.toggleWorkspaceSwitcher();
             else if (key === ',') state.toggleSettings();

@@ -12,7 +12,7 @@ function getCwds(node: PaneNode): string[] {
   return [...getCwds(node.first), ...getCwds(node.second)];
 }
 
-function PaneLeaf({ node, tabId, showHeader }: { node: PaneNode; tabId: string; showHeader: boolean }) {
+function PaneLeaf({ node, tabId, showHeader }: { node: Extract<PaneNode, { type: 'leaf' }>; tabId: string; showHeader: boolean }) {
   const activeTabId = useAppStore(state => state.activeTabId);
   const activePaneId = useAppStore(state => {
     const tab = state.tabs.find(t => t.id === tabId);
