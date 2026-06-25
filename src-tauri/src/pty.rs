@@ -160,3 +160,20 @@ pub fn kill_pty(id: String) -> Result<(), String> {
 
     Ok(())
 }
+
+/// Gets the current working directory of the PTY session by inspecting /proc/{pid}/cwd
+#[tauri::command]
+pub fn get_pty_cwd(id: String) -> Result<String, String> {
+    let registry = PTY_REGISTRY.lock().map_err(|e| format!("Lock error: {}", e))?;
+    if let Some(session) = registry.get(&id) {
+        if let Some(pid) = session.child.process_id() {
+            #[cfg(target_os = "linux")]
+            {
+                if let Ok(cwd) = std::fs::read_link(format!("/proc/{}/cwd", pid)) {
+                    return Ok(cwd.to_string_lossy().to_string());
+                }
+            }
+        }
+    }
+    Ok(".".to_string())
+}

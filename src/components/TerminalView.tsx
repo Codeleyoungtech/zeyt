@@ -4,6 +4,7 @@ import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
 import { useAppStore } from "../lib/store";
 import { themes } from "../lib/theme";
+import { invoke } from '@tauri-apps/api/core';
 
 import {
   spawnPty,
@@ -122,9 +123,27 @@ export default function TerminalView({ tabId, paneId, initialCwd }: TerminalView
       if (mod) {
         const key = event.key.toLowerCase();
         
-        // Allow Shortcuts to bubble up to the global handler
-        if (key === 't' || key === 'w' || key === 'd' || (key >= '1' && key <= '9')) {
-          return false;
+        // Execute global shortcuts locally to prevent xterm from swallowing them or bubbling poorly
+        if (['t', 'w', 'd', 'k', ','].includes(key) || (key >= '1' && key <= '9')) {
+          if (event.type === 'keydown') {
+            event.preventDefault();
+            event.stopPropagation();
+            const state = useAppStore.getState();
+            if (key === 't') state.addTab();
+            else if (key === 'w') {
+              if (state.activeTabId && paneId) state.closePane(paneId);
+            }
+            else if (key === 'd') {
+              if (state.activeTabId && paneId) state.splitPane(paneId, event.shiftKey ? 'horizontal' : 'vertical');
+            }
+            else if (key === 'k') state.toggleWorkspaceSwitcher();
+            else if (key === ',') state.toggleSettings();
+            else if (key >= '1' && key <= '9') {
+              const idx = parseInt(key) - 1;
+              if (state.tabs[idx]) state.setActiveTab(state.tabs[idx].id);
+            }
+          }
+          return false; // Prevent xterm processing
         }
       }
 
@@ -179,6 +198,20 @@ export default function TerminalView({ tabId, paneId, initialCwd }: TerminalView
       }
     })();
 
+    // ── CWD Polling ─────────────────────────────────────────
+    const cwdInterval = setInterval(async () => {
+      if (ptyId) {
+        try {
+          const cwd = await invoke<string>('get_pty_cwd', { id: ptyId });
+          if (cwd && cwd !== ".") {
+            useAppStore.getState().updatePaneCwd(paneId, cwd);
+          }
+        } catch (e) {
+          // Ignore errors
+        }
+      }
+    }, 5000);
+
     // ── Resize handling ─────────────────────────────────────
     const resizeObserver = new ResizeObserver(() => {
       fitAddon.fit();
@@ -191,6 +224,7 @@ export default function TerminalView({ tabId, paneId, initialCwd }: TerminalView
     // ── Cleanup ─────────────────────────────────────────────
     return () => {
       disposed = true;
+      clearInterval(cwdInterval);
       resizeObserver.disconnect();
       onDataDisposable.dispose();
       onTitleChangeDisposable.dispose();
@@ -254,7 +288,7 @@ export default function TerminalView({ tabId, paneId, initialCwd }: TerminalView
 
   return (
     <div 
-      className={`w-full h-full flex flex-col overflow-hidden transition-colors border border-transparent ${isActive ? '!border-[#ffbd2e]' : ''}`}
+      className="w-full h-full flex flex-col overflow-hidden bg-[#1a1a1e]"
       onMouseDown={() => {
         const state = useAppStore.getState();
         if (state.activeTabId === tabId) {
@@ -262,10 +296,20 @@ export default function TerminalView({ tabId, paneId, initialCwd }: TerminalView
         }
       }}
     >
+      <style>{`
+        /* Glowing cursor only for active pane */
+        ${isActive ? `
+        .terminal-${paneId} .xterm-cursor-block {
+          background-color: var(--brand) !important;
+          box-shadow: 0 0 10px var(--brand);
+          color: #000 !important;
+        }
+        ` : ''}
+      `}</style>
       <div
         ref={containerRef}
-        className="flex-1 w-full min-h-0"
-        style={{ padding: '2px' }}
+        className={`flex-1 w-full min-h-0 terminal-${paneId}`}
+        style={{ padding: '4px' }}
       />
     </div>
   );

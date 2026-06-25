@@ -1,16 +1,22 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect, useState } from "react";
+import { useAppStore } from "../lib/store";
 
 export default function Titlebar() {
   const appWindow = getCurrentWindow();
   const [isMac, setIsMac] = useState(false);
+  
+  const activeWorkspaceId = useAppStore(state => state.activeWorkspaceId);
+  const workspaceName = useAppStore(state => {
+    const ws = state.workspaces.find(w => w.id === state.activeWorkspaceId);
+    return ws?.name;
+  });
 
   useEffect(() => {
     setIsMac(navigator.platform.toUpperCase().indexOf('MAC') >= 0);
   }, []);
 
   const handleDrag = (e: React.PointerEvent) => {
-    // Only allow left-click dragging
     if (e.button === 0) {
       e.preventDefault();
       appWindow.startDragging();
@@ -18,7 +24,7 @@ export default function Titlebar() {
   };
 
   const MacControls = () => (
-    <div className="flex gap-2 items-center group pl-2">
+    <div className="flex gap-2.5 items-center group pl-2">
       <button
         onClick={() => appWindow.close()}
         className="w-3 h-3 rounded-full bg-[#ff5f56] flex items-center justify-center opacity-90 hover:opacity-100 transition-opacity"
@@ -51,10 +57,10 @@ export default function Titlebar() {
   );
 
   const WindowsControls = () => (
-    <div className="flex h-full items-center">
+    <div className="flex items-center gap-1.5 pr-2">
       <button
         onClick={() => appWindow.minimize()}
-        className="h-full px-4 text-[#cccccc] hover:bg-[#333333] hover:text-white transition-colors"
+        className="w-8 h-8 flex items-center justify-center rounded-md text-[#cccccc] hover:bg-[#333333] hover:text-white transition-colors"
       >
         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -62,7 +68,7 @@ export default function Titlebar() {
       </button>
       <button
         onClick={() => appWindow.toggleMaximize()}
-        className="h-full px-4 text-[#cccccc] hover:bg-[#333333] hover:text-white transition-colors"
+        className="w-8 h-8 flex items-center justify-center rounded-md text-[#cccccc] hover:bg-[#333333] hover:text-white transition-colors"
       >
         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -70,7 +76,7 @@ export default function Titlebar() {
       </button>
       <button
         onClick={() => appWindow.close()}
-        className="h-full px-4 text-[#cccccc] hover:bg-[#e81123] hover:text-white transition-colors"
+        className="w-8 h-8 flex items-center justify-center rounded-md text-[#cccccc] hover:bg-[#e81123] hover:text-white transition-colors"
       >
         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -92,9 +98,18 @@ export default function Titlebar() {
       )}
       
       <div 
-        className="flex-1 h-full flex justify-center items-center text-[#999999] text-xs font-medium cursor-default"
+        className="flex-1 h-full flex justify-center items-center text-[#999999] text-xs font-medium cursor-default gap-2"
       >
-        {/* App title or empty space */}
+        {activeWorkspaceId && workspaceName ? (
+          <>
+            <svg className="w-3 h-3 text-[var(--brand)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+            </svg>
+            <span>{workspaceName}</span>
+          </>
+        ) : (
+          <span>Zeyt</span>
+        )}
       </div>
 
       {!isMac && <WindowsControls />}
