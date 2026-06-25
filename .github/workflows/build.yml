@@ -5,7 +5,8 @@ on:
     branches:
       - main
     tags:
-      - 'zeyt-v*'
+      - 'v*'
+      - 'V*'
   pull_request:
     branches:
       - main
@@ -76,7 +77,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: zeyt-v__VERSION__
+          tagName: v__VERSION__
           releaseName: 'Zeyt v__VERSION__'
           releaseBody: 'See the assets below to download Zeyt for your platform.'
           releaseDraft: true
