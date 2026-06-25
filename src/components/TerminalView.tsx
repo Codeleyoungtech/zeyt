@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
@@ -23,9 +23,6 @@ export interface TerminalViewProps {
 export default function TerminalView({ tabId, paneId, initialCwd }: TerminalViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const updateTabTitle = useAppStore(state => state.updateTabTitle);
-  const setActivePane = useAppStore(state => state.setActivePane);
-  const splitPane = useAppStore(state => state.splitPane);
-  const closePane = useAppStore(state => state.closePane);
   const activeTabId = useAppStore(state => state.activeTabId);
   const settings = useAppStore(state => state.settings);
 

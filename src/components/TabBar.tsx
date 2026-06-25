@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStore } from '../lib/store';
 
 export default function TabBar() {
