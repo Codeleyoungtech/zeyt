@@ -1,6 +1,6 @@
 import { useAppStore } from '../lib/store';
 import { themes } from '../lib/theme';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import React from 'react';
 
 type SettingsTab = 'appearance' | 'terminal' | 'keybindings';
@@ -20,6 +20,22 @@ const DEFAULT_KEYBINDINGS = [
 export default function SettingsPanel() {
   const { isSettingsOpen, toggleSettings, settings, updateSettings } = useAppStore();
   const [activeTab, setActiveTab] = useState<SettingsTab>('appearance');
+  const [localFontSize, setLocalFontSize] = useState(settings?.fontSize || 14);
+
+  useEffect(() => {
+    if (settings?.fontSize) {
+      setLocalFontSize(settings.fontSize);
+    }
+  }, [settings?.fontSize]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (localFontSize !== settings?.fontSize) {
+        updateSettings({ fontSize: localFontSize });
+      }
+    }, 100);
+    return () => clearTimeout(handler);
+  }, [localFontSize, settings?.fontSize, updateSettings]);
 
   if (!isSettingsOpen) return null;
 
@@ -228,12 +244,12 @@ export default function SettingsPanel() {
                     <input
                       type="range"
                       min="8" max="32"
-                      value={settings.fontSize}
-                      onChange={(e) => updateSettings({ fontSize: parseInt(e.target.value) })}
+                      value={localFontSize}
+                      onChange={(e) => setLocalFontSize(parseInt(e.target.value))}
                       className="flex-1 accent-[var(--brand)]"
                     />
                     <span className="text-xs text-[#666]">32</span>
-                    <span className="text-sm font-bold text-[var(--brand)] w-6 text-right">{settings.fontSize}</span>
+                    <span className="text-sm font-bold text-[var(--brand)] w-6 text-right">{localFontSize}</span>
                   </div>
                 </div>
 

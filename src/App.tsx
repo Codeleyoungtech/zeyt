@@ -4,12 +4,13 @@ import PaneTree from "./components/PaneTree";
 import SettingsPanel from "./components/SettingsModal";
 import WorkspaceSidebar from "./components/WorkspaceSwitcher";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { useAppStore } from "./lib/store";
+import { useAppStore, PaneNode } from "./lib/store";
 import { useEffect } from "react";
+import { TerminalRegistry } from "./lib/TerminalRegistry";
 
 export default function App() {
   const appWindow = getCurrentWindow();
-  const { tabs, activeTabId, addTab, loadSettings, loadWorkspaces, toggleWorkspaceSwitcher, toggleSettings, settings } = useAppStore();
+  const { tabs, workspaces, activeTabId, addTab, loadSettings, loadWorkspaces, toggleWorkspaceSwitcher, toggleSettings, settings } = useAppStore();
 
   const handleResize = (direction: any) => (e: React.PointerEvent) => {
     e.preventDefault();
@@ -45,6 +46,31 @@ export default function App() {
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [toggleWorkspaceSwitcher, toggleSettings, settings?.workspaceSwitcherMode]);
+
+  // Terminal Settings Update
+  useEffect(() => {
+    TerminalRegistry.updateSettings(settings);
+  }, [settings]);
+
+  // Terminal Garbage Collection
+  useEffect(() => {
+    const activePaneIds = new Set<string>();
+
+    const collect = (node: PaneNode) => {
+      if (node.type === 'leaf') activePaneIds.add(node.id);
+      else {
+        collect(node.first);
+        collect(node.second);
+      }
+    };
+
+    tabs.forEach(tab => collect(tab.root));
+    workspaces.forEach(ws => {
+      ws.tabs.forEach(tab => collect(tab.root));
+    });
+
+    TerminalRegistry.destroyAllExcept(activePaneIds);
+  }, [tabs, workspaces]);
 
   // If no tabs exist, create a new one automatically
   useEffect(() => {
