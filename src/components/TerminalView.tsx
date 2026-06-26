@@ -2,6 +2,7 @@ import { useRef, useLayoutEffect } from "react";
 import { useAppStore } from "../lib/store";
 import { TerminalRegistry } from "../lib/TerminalRegistry";
 import { resizePty } from "../lib/ptyClient";
+import "@xterm/xterm/css/xterm.css";
 
 export interface TerminalViewProps {
   tabId: string;
