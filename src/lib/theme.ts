@@ -141,6 +141,7 @@ export interface Settings {
   fontSize: number;
   cursorStyle: 'block' | 'underline' | 'bar';
   cursorBlink: boolean;
+  workspaceSwitcherMode: 'overlay' | 'sidebar';
 }
 
 export const defaultSettings: Settings = {
@@ -149,4 +150,5 @@ export const defaultSettings: Settings = {
   fontSize: 14,
   cursorStyle: 'block',
   cursorBlink: true,
+  workspaceSwitcherMode: 'overlay',
 };

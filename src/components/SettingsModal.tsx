@@ -150,6 +150,33 @@ export default function SettingsPanel() {
                   </div>
                 </div>
 
+                {/* Workspace Switcher Mode */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[#888]">Workspace Sidebar</label>
+                  <div className="flex gap-2">
+                    {(['overlay', 'sidebar'] as const).map((mode) => (
+                      <button
+                        key={mode}
+                        onClick={() => updateSettings({ workspaceSwitcherMode: mode })}
+                        className={`flex-1 py-2 rounded-lg border text-sm transition-all relative ${
+                          settings.workspaceSwitcherMode === mode
+                            ? 'border-[var(--brand)] bg-[#222] text-white'
+                            : 'border-[#333] hover:border-[#444] bg-[#222] text-[#999]'
+                        }`}
+                      >
+                        {mode === 'overlay' ? 'Show on Ctrl+K' : 'Always visible'}
+                        {settings.workspaceSwitcherMode === mode && (
+                          <div className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[var(--brand)] flex items-center justify-center shadow-sm">
+                            <svg className="w-2.5 h-2.5 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Preview */}
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-semibold uppercase tracking-wider text-[#888]">Preview</label>

@@ -14,6 +14,7 @@ export default function WorkspaceSidebar() {
     renameWorkspace,
     toggleWorkspaceFavorite,
     reorderWorkspaces,
+    settings,
   } = useAppStore();
 
   const [search, setSearch] = useState('');
@@ -22,14 +23,17 @@ export default function WorkspaceSidebar() {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
+  const mode = settings?.workspaceSwitcherMode || 'overlay';
+  const isOpen = mode === 'sidebar' ? true : isWorkspaceSwitcherOpen;
+
   useEffect(() => {
-    if (isWorkspaceSwitcherOpen) {
+    if (isWorkspaceSwitcherOpen && mode === 'overlay') {
       setSearch('');
       setTimeout(() => searchRef.current?.focus(), 50);
     }
-  }, [isWorkspaceSwitcherOpen]);
+  }, [isWorkspaceSwitcherOpen, mode]);
 
-  if (!isWorkspaceSwitcherOpen) return null;
+  if (!isOpen) return null;
 
   // Preserve user order, just filter by search
   const filtered = workspaces.filter(w =>
@@ -64,16 +68,10 @@ export default function WorkspaceSidebar() {
     setEditingId(null);
   };
 
-  return (
-    <div
-      className="absolute inset-0 z-50 flex bg-black/40 backdrop-blur-[4px] transition-all duration-300"
-      onMouseDown={(e) => { if (e.target === e.currentTarget) toggleWorkspaceSwitcher(); }}
-    >
+  const sidebarContent = (
       <div 
-        className="w-[280px] h-full bg-[#151515] border-r border-[#2a2a2a] flex flex-col shadow-2xl animate-[slideIn_0.2s_ease-out]"
-        style={{
-          boxShadow: '4px 0 24px rgba(0,0,0,0.5)'
-        }}
+        className={`h-full bg-[#151515] border-r border-[#2a2a2a] flex flex-col ${mode === 'overlay' ? 'w-[280px] shadow-2xl animate-[slideIn_0.2s_ease-out]' : 'w-[240px]'}`}
+        style={mode === 'overlay' ? { boxShadow: '4px 0 24px rgba(0,0,0,0.5)' } : {}}
       >
         {/* Search Header */}
         <div className="px-4 py-4 shrink-0 border-b border-[#222]">
@@ -83,6 +81,7 @@ export default function WorkspaceSidebar() {
                 <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
               <input
+                id="workspace-sidebar-search"
                 ref={searchRef}
                 type="text"
                 value={search}
@@ -218,6 +217,18 @@ export default function WorkspaceSidebar() {
         </div>
 
       </div>
+  );
+
+  if (mode === 'sidebar') {
+    return sidebarContent;
+  }
+
+  return (
+    <div
+      className="absolute inset-0 z-50 flex bg-black/40 backdrop-blur-[4px] transition-all duration-300"
+      onMouseDown={(e) => { if (e.target === e.currentTarget) toggleWorkspaceSwitcher(); }}
+    >
+      {sidebarContent}
       <style>{`
         @keyframes slideIn {
           from { transform: translateX(-100%); }

@@ -9,7 +9,7 @@ import { useEffect } from "react";
 
 export default function App() {
   const appWindow = getCurrentWindow();
-  const { tabs, activeTabId, addTab, loadSettings, loadWorkspaces, toggleWorkspaceSwitcher, toggleSettings } = useAppStore();
+  const { tabs, activeTabId, addTab, loadSettings, loadWorkspaces, toggleWorkspaceSwitcher, toggleSettings, settings } = useAppStore();
 
   const handleResize = (direction: any) => (e: React.PointerEvent) => {
     e.preventDefault();
@@ -31,7 +31,12 @@ export default function App() {
 
       if (e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        toggleWorkspaceSwitcher();
+        if (settings?.workspaceSwitcherMode === 'sidebar') {
+          const searchInput = document.getElementById('workspace-sidebar-search');
+          if (searchInput) searchInput.focus();
+        } else {
+          toggleWorkspaceSwitcher();
+        }
       } else if (e.key === ',') {
         e.preventDefault();
         toggleSettings();
@@ -39,7 +44,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [toggleWorkspaceSwitcher, toggleSettings]);
+  }, [toggleWorkspaceSwitcher, toggleSettings, settings?.workspaceSwitcherMode]);
 
   // If no tabs exist, create a new one automatically
   useEffect(() => {
@@ -49,9 +54,9 @@ export default function App() {
   }, [tabs.length, addTab]);
 
   return (
-    <div className="w-screen h-screen bg-transparent relative">
+    <div className="w-screen h-screen bg-transparent relative flex flex-col">
       <SettingsPanel />
-      <WorkspaceSidebar />
+      {settings?.workspaceSwitcherMode !== 'sidebar' && <WorkspaceSidebar />}
       {/* Invisible resize handles */}
       <div className="absolute top-0 left-0 w-full h-2 cursor-n-resize z-50" onPointerDown={handleResize('North')} />
       <div className="absolute bottom-0 left-0 w-full h-2 cursor-s-resize z-50" onPointerDown={handleResize('South')} />
@@ -63,8 +68,9 @@ export default function App() {
       <div className="absolute bottom-0 right-0 w-3 h-3 cursor-se-resize z-50" onPointerDown={handleResize('SouthEast')} />
 
       {/* Main App Container */}
-      <div className="w-full h-full">
-        <div className="w-full h-full flex flex-col bg-[#1a1a1e] border border-[#333333]">
+      <div className="flex-1 w-full flex flex-row min-h-0 border border-[#333333] rounded-lg overflow-hidden">
+        {settings?.workspaceSwitcherMode === 'sidebar' && <WorkspaceSidebar />}
+        <div className="flex-1 h-full flex flex-col bg-[#1a1a1e] min-w-0">
           <Titlebar />
           <TabBar />
           <div className="flex-1 w-full min-h-0 relative">
