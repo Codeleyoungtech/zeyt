@@ -1,6 +1,6 @@
 # Zeyt
 
-Zeyt is a modern, high-performance terminal emulator built with Tauri, Rust, and React. It features a native PTY backend, comprehensive split-pane management, and a rich, customizable interface.
+Zeyt is a fast, GPU-optional terminal app with macOS-inspired design, folder-aware workspaces, and a clean split-pane layout — built to run smoothly even on older hardware. It features a native PTY backend built with Tauri and Rust, and a rich, customizable interface.
 
 ## Features
 - **Lightning Fast**: Powered by a custom Rust PTY backend (`portable-pty`) and xterm.js rendering.

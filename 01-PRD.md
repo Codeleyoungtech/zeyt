@@ -11,8 +11,7 @@
 
 ## 1. Vision
 
-A standalone, GPU-optional terminal emulator with macOS-grade visual design,
-built to run smoothly on a 12-year-old integrated-graphics laptop and to look
+Zeyt is a fast, GPU-optional terminal app with macOS-inspired design, folder-aware workspaces, and a clean split-pane layout — built to run smoothly even on older hardware and to look
 and feel competitive with premium Mac terminals (iTerm2, WezTerm, Ghostty,
 "cmux"-style tools) when later run on capable hardware.
 

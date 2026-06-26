@@ -13,8 +13,7 @@ directly instead of relying on this prompt to restate everything.
 
 ## PROMPT START
 
-You are building **Zeyt** — a standalone, GPU-optional terminal emulator
-with macOS-grade visual design. Full specification lives in four docs;
+You are building **Zeyt** — a fast, GPU-optional terminal app with macOS-inspired design, folder-aware workspaces, and a clean split-pane layout — built to run smoothly even on older hardware. Full specification lives in four docs;
 read them in this order before writing any code:
 
 1. `01-PRD.md` — vision, scope, goals, success criteria
