@@ -280,12 +280,69 @@ export const useAppStore = create<AppState>((set, get) => ({
   loadWorkspaces: async () => {
     try {
       const json = await invoke<string>('load_workspaces');
+      let workspaces: Workspace[] = [];
       if (json && json !== '[]') {
-        const workspaces: Workspace[] = JSON.parse(json);
+        workspaces = JSON.parse(json);
         set({ workspaces });
+      }
 
-        const state = get();
-        if (!state.activeWorkspaceId && workspaces.length > 0) {
+      // Check for CLI args (args[0] is binary, args[1] is potential path)
+      let cliPath: string | null = null;
+      try {
+        const args = await invoke<string[]>('get_cli_args');
+        if (args.length > 1) {
+          // Tauri passes -- as a separator sometimes, or just the path directly
+          const potentialPath = args[args.length - 1]; // Naive check: take the last arg as path if it isn't a flag
+          if (!potentialPath.startsWith('-')) {
+            cliPath = potentialPath;
+          }
+        }
+      } catch (e) {
+        console.error("Failed to get CLI args:", e);
+      }
+
+      const state = get();
+      if (!state.activeWorkspaceId) {
+        if (cliPath) {
+          // Check if workspace already exists
+          const existing = workspaces.find(w => w.rootPath === cliPath);
+          if (existing) {
+            set({
+              activeWorkspaceId: existing.id,
+              tabs: existing.tabs,
+              activeTabId: existing.activeTabId,
+            });
+          } else {
+            // Create a new workspace for the CLI path
+            const folderName = cliPath.split('/').filter(Boolean).pop() || 'Workspace';
+            const paneId = generateId();
+            const tabId = generateId();
+            
+            const freshTab: Tab = {
+              id: tabId,
+              title: 'Terminal',
+              root: { type: 'leaf', id: paneId, cwd: cliPath },
+              activePaneId: paneId
+            };
+            
+            const newWorkspace: Workspace = {
+              id: generateId(),
+              name: folderName,
+              rootPath: cliPath,
+              tabs: [freshTab],
+              activeTabId: tabId,
+              favorite: false,
+              lastUsedAt: Date.now()
+            };
+            
+            set({
+              workspaces: [...workspaces, newWorkspace],
+              activeWorkspaceId: newWorkspace.id,
+              tabs: newWorkspace.tabs,
+              activeTabId: newWorkspace.activeTabId,
+            });
+          }
+        } else if (workspaces.length > 0) {
           const lastActive = [...workspaces].sort((a, b) => b.lastUsedAt - a.lastUsedAt)[0];
           // Apply the workspace's saved layout
           set({

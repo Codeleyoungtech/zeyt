@@ -2,14 +2,9 @@ name: 'build'
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*'
       - 'V*'
-  pull_request:
-    branches:
-      - main
 
 jobs:
   build:
@@ -79,7 +74,20 @@ jobs:
         with:
           tagName: v__VERSION__
           releaseName: 'Zeyt v__VERSION__'
-          releaseBody: 'See the assets below to download Zeyt for your platform.'
+          releaseBody: |
+            ### Welcome to Zeyt v0.1.1
+            Zeyt is a fast, GPU-optional, lightweight terminal built with Tauri, React, and Rust, heavily optimized for local productivity and agentic workflows.
+            
+            #### What's New in this Release:
+            - **CLI Launch Path Resolution:** Running `zeyt /path/to/project` instantly opens Zeyt with a workspace focused on that path.
+            - **Smart Ctrl+C:** Hitting `Ctrl+C` will now intuitively copy text if you have an active selection. If nothing is selected, it falls back to the native UNIX interrupt signal.
+            - **Directory-Scoped Autosuggest:** Intelligent ghost-text command suggestions powered by a fast SQLite Rust backend that scopes suggestions to your current working directory.
+            - **Font Ligatures:** Full support for code ligatures (`=>`, `!=`, etc.) for beautiful output in JetBrains Mono or Cascadia Code.
+            - **Agent Task Notifications:** Desktop OS notifications natively pipe in when long-running background tasks exit.
+            
+            #### Known Limitations
+            - **macOS Users:** The macOS `.app` bundle and `.dmg` in this release are currently unsigned. On first launch, macOS Gatekeeper will block it. You must **Right-click → Open** the application the first time to bypass the warning, or allow it via System Settings.
+            - Please report any other issues on GitHub!
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}

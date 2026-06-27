@@ -1,6 +1,11 @@
 mod pty;
 mod settings;
 mod workspaces;
+
+#[tauri::command]
+fn get_cli_args() -> Vec<String> {
+    std::env::args().collect()
+}
 mod history;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -27,6 +32,7 @@ pub fn run() {
             history::save_command,
             history::get_suggestions,
             history::clear_history,
+            get_cli_args,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
