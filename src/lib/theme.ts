@@ -142,6 +142,9 @@ export interface Settings {
   cursorStyle: 'block' | 'underline' | 'bar';
   cursorBlink: boolean;
   workspaceSwitcherMode: 'overlay' | 'sidebar';
+  notificationsEnabled: boolean;
+  notificationMinRuntime: number; // seconds — only notify on exit if process ran longer than this
+  smartCtrlC: boolean;
 }
 
 export const defaultSettings: Settings = {
@@ -151,4 +154,7 @@ export const defaultSettings: Settings = {
   cursorStyle: 'block',
   cursorBlink: true,
   workspaceSwitcherMode: 'overlay',
+  notificationsEnabled: true,
+  notificationMinRuntime: 10,
+  smartCtrlC: true,
 };

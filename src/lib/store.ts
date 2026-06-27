@@ -31,6 +31,7 @@ interface AppState {
   settings: Settings;
   isSettingsOpen: boolean;
   isWorkspaceSwitcherOpen: boolean;
+  badgedTabIds: Set<string>;
   
   addTab: () => void;
   closeTab: (id: string) => void;
@@ -58,6 +59,10 @@ interface AppState {
   renameWorkspace: (workspaceId: string, newName: string) => void;
   toggleWorkspaceFavorite: (workspaceId: string) => void;
   reorderWorkspaces: (sourceId: string, targetId: string) => void;
+
+  // Badges
+  addTabBadge: (tabId: string) => void;
+  clearTabBadge: (tabId: string) => void;
 }
 
 const generateId = () => `id-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -112,6 +117,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   settings: defaultSettings,
   isSettingsOpen: false,
   isWorkspaceSwitcherOpen: false,
+  badgedTabIds: new Set<string>(),
 
   // ── Tab actions ──────────────────────────────────────────
   addTab: () => set((state) => {
@@ -148,7 +154,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     return { tabs: newTabs, activeTabId: newActiveId };
   }),
 
-  setActiveTab: (id: string) => set({ activeTabId: id }),
+  setActiveTab: (id: string) => set((state) => {
+    // Clear badge when switching to a tab
+    const newBadges = new Set(state.badgedTabIds);
+    newBadges.delete(id);
+    return { activeTabId: id, badgedTabIds: newBadges };
+  }),
 
   updateTabTitle: (id: string, title: string) => set((state) => ({
     tabs: state.tabs.map(t => t.id === id ? { ...t, title } : t)
@@ -399,6 +410,21 @@ export const useAppStore = create<AppState>((set, get) => ({
     
     scheduleWorkspaceSave(newWorkspaces);
     return { workspaces: newWorkspaces };
+  }),
+
+  // ── Badges ──────────────────────────────────────────────
+  addTabBadge: (tabId: string) => set((state) => {
+    // Don't badge the currently active tab
+    if (state.activeTabId === tabId) return state;
+    const newBadges = new Set(state.badgedTabIds);
+    newBadges.add(tabId);
+    return { badgedTabIds: newBadges };
+  }),
+
+  clearTabBadge: (tabId: string) => set((state) => {
+    const newBadges = new Set(state.badgedTabIds);
+    newBadges.delete(tabId);
+    return { badgedTabIds: newBadges };
   }),
 }));
 

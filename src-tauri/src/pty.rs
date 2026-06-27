@@ -2,14 +2,17 @@ use portable_pty::{native_pty_system, CommandBuilder, PtySize, MasterPty, Child}
 use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::sync::{LazyLock, Mutex};
+use std::time::Instant;
 use tauri::Emitter;
 use uuid::Uuid;
 
 /// Holds the master PTY handle (for resize), writer (for input), and child process (for kill).
+#[allow(dead_code)]
 struct PtySession {
     master: Box<dyn MasterPty + Send>,
     writer: Box<dyn Write + Send>,
     child: Box<dyn Child + Send + Sync>,
+    spawned_at: Instant,
 }
 
 static PTY_REGISTRY: LazyLock<Mutex<HashMap<String, PtySession>>> =
@@ -70,12 +73,14 @@ pub fn spawn_pty(app: tauri::AppHandle, cwd: String) -> Result<String, String> {
                 master: pair.master,
                 writer,
                 child,
+                spawned_at: Instant::now(),
             },
         );
     }
 
     // Spawn reader thread that emits output events
     let event_id = id.clone();
+    let spawn_instant = Instant::now();
     std::thread::spawn(move || {
         let mut buf = [0u8; 4096];
         loop {
@@ -91,6 +96,10 @@ pub fn spawn_pty(app: tauri::AppHandle, cwd: String) -> Result<String, String> {
                 Err(_) => break,
             }
         }
+        // Process exited — emit exit event with runtime in seconds
+        let runtime_secs = spawn_instant.elapsed().as_secs();
+        let exit_event = format!("pty-exited-{}", event_id);
+        let _ = app.emit(&exit_event, runtime_secs);
     });
 
     Ok(id)

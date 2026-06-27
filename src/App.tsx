@@ -7,6 +7,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useAppStore, PaneNode } from "./lib/store";
 import { useEffect } from "react";
 import { TerminalRegistry } from "./lib/TerminalRegistry";
+import { ensureNotificationPermission, setupNotificationFocusListener } from "./lib/notifications";
 
 export default function App() {
   const appWindow = getCurrentWindow();
@@ -22,6 +23,8 @@ export default function App() {
   useEffect(() => {
     loadSettings();
     loadWorkspaces();
+    ensureNotificationPermission();
+    setupNotificationFocusListener();
   }, [loadSettings, loadWorkspaces]);
 
   // Global Keybindings

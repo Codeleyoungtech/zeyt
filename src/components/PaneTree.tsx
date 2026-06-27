@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import TerminalView from './TerminalView';
 import { PaneNode, useAppStore, countLeaves } from '../lib/store';
+import { TerminalRegistry } from '../lib/TerminalRegistry';
 
 interface PaneTreeProps {
   node: PaneNode;
@@ -10,6 +11,34 @@ interface PaneTreeProps {
 function getCwds(node: PaneNode): string[] {
   if (node.type === 'leaf') return [node.cwd || ''];
   return [...getCwds(node.first), ...getCwds(node.second)];
+}
+
+function WatchToggle({ paneId, className = "" }: { paneId: string, className?: string }) {
+  const [isWatched, setIsWatched] = useState(() => TerminalRegistry.isWatched(paneId));
+
+  const toggleWatch = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newVal = !isWatched;
+    TerminalRegistry.setWatched(paneId, newVal);
+    setIsWatched(newVal);
+  };
+
+  return (
+    <button
+      onClick={toggleWatch}
+      className={`w-5 h-5 flex items-center justify-center rounded transition-all ${
+        isWatched
+          ? 'text-[var(--brand)] opacity-100'
+          : 'text-[#888] hover:text-[var(--brand)]'
+      } ${className}`}
+      title={isWatched ? 'Stop watching this pane' : 'Watch this pane for notifications'}
+    >
+      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill={isWatched ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+    </button>
+  );
 }
 
 function PaneLeaf({ node, tabId, showHeader }: { node: Extract<PaneNode, { type: 'leaf' }>; tabId: string; showHeader: boolean }) {
@@ -31,15 +60,18 @@ function PaneLeaf({ node, tabId, showHeader }: { node: Extract<PaneNode, { type:
       {showHeader ? (
         <PaneHeader paneId={node.id} tabId={tabId} cwd={node.cwd} onClose={() => closePane(node.id)} />
       ) : (
-        <button
-          onClick={(e) => { e.stopPropagation(); closePane(node.id); }}
-          className="absolute top-1 right-1 z-20 w-5 h-5 flex items-center justify-center rounded hover:bg-[#444] bg-[#222]/80 transition-opacity opacity-0 group-hover:opacity-100"
-          title="Close Pane"
-        >
-          <svg className="w-3 h-3 text-[#ccc]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
-        </button>
+        <div className="absolute top-1 right-1 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <WatchToggle paneId={node.id} className="bg-[#222]/80 hover:bg-[#444]" />
+          <button
+            onClick={(e) => { e.stopPropagation(); closePane(node.id); }}
+            className="w-5 h-5 flex items-center justify-center rounded hover:bg-[#444] bg-[#222]/80 transition-opacity"
+            title="Close Pane"
+          >
+            <svg className="w-3 h-3 text-[#ccc]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
       )}
       <div className="flex-1 min-h-0 bg-[#1a1a1e]">
         <TerminalView tabId={tabId} paneId={node.id} initialCwd={node.cwd} />
@@ -152,14 +184,18 @@ function PaneHeader({ paneId, tabId, cwd, onClose }: { paneId: string; tabId: st
         </svg>
         <span className="truncate">{displayPath}</span>
       </div>
-      <button
-        onClick={(e) => { e.stopPropagation(); onClose(); }}
-        className="w-4 h-4 flex items-center justify-center rounded hover:bg-[#444] transition-opacity opacity-0 group-hover:opacity-100"
-      >
-        <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-          <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
-      </button>
+      <div className="flex items-center gap-0.5">
+        <WatchToggle paneId={paneId} className="w-4 h-4" />
+        {/* Close button */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
+          className="w-4 h-4 flex items-center justify-center rounded hover:bg-[#444] transition-opacity opacity-0 group-hover:opacity-100"
+        >
+          <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

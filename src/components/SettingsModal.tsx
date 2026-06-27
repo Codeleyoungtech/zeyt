@@ -3,7 +3,7 @@ import { themes } from '../lib/theme';
 import { useState, useEffect } from 'react';
 import React from 'react';
 
-type SettingsTab = 'appearance' | 'terminal' | 'keybindings';
+type SettingsTab = 'appearance' | 'terminal' | 'keybindings' | 'notifications' | 'advanced';
 
 const DEFAULT_KEYBINDINGS = [
   { action: 'New Tab', key: 'Ctrl+T', id: 'newTab' },
@@ -64,6 +64,26 @@ export default function SettingsPanel() {
       icon: (
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <rect x="2" y="4" width="20" height="16" rx="2" /><line x1="6" y1="8" x2="6" y2="8" /><line x1="10" y1="8" x2="10" y2="8" /><line x1="14" y1="8" x2="14" y2="8" /><line x1="18" y1="8" x2="18" y2="8" /><line x1="6" y1="12" x2="18" y2="12" /><line x1="6" y1="16" x2="18" y2="16" />
+        </svg>
+      ),
+    },
+    {
+      id: 'notifications' as SettingsTab,
+      label: 'Notifications',
+      icon: (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+        </svg>
+      ),
+    },
+    {
+      id: 'advanced' as SettingsTab,
+      label: 'Advanced',
+      icon: (
+        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
         </svg>
       ),
     },
@@ -294,6 +314,26 @@ export default function SettingsPanel() {
                     }`} />
                   </div>
                 </label>
+
+                {/* Smart Ctrl+C */}
+                <div className="flex flex-col gap-1 pt-4 border-t border-[#333]">
+                  <label className="flex items-center justify-between cursor-pointer">
+                    <span className="text-sm">Smart Ctrl+C</span>
+                    <div
+                      onClick={() => updateSettings({ smartCtrlC: !settings.smartCtrlC })}
+                      className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer shrink-0 ${
+                        settings.smartCtrlC ? 'bg-[var(--brand)]' : 'bg-[#444]'
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-transform ${
+                        settings.smartCtrlC ? 'translate-x-5' : 'translate-x-0.5'
+                      }`} />
+                    </div>
+                  </label>
+                  <span className="text-xs text-[#888]">
+                    When enabled, pressing Ctrl+C copies selected text. When nothing is selected, it sends an interrupt signal.
+                  </span>
+                </div>
               </div>
             )}
 
@@ -308,6 +348,94 @@ export default function SettingsPanel() {
                     </kbd>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {activeTab === 'notifications' && (
+              <div className="flex flex-col gap-5">
+                {/* Master toggle */}
+                <label className="flex items-center justify-between cursor-pointer">
+                  <div>
+                    <span className="text-sm">Enable Notifications</span>
+                    <p className="text-[11px] text-[#666] mt-0.5">Get notified when watched panes need attention</p>
+                  </div>
+                  <div
+                    onClick={() => updateSettings({ notificationsEnabled: !settings.notificationsEnabled })}
+                    className={`w-10 h-5 rounded-full transition-colors relative cursor-pointer ${
+                      settings.notificationsEnabled ? 'bg-[var(--brand)]' : 'bg-[#444]'
+                    }`}
+                  >
+                    <div className={`w-4 h-4 rounded-full bg-white absolute top-0.5 transition-transform ${
+                      settings.notificationsEnabled ? 'translate-x-5' : 'translate-x-0.5'
+                    }`} />
+                  </div>
+                </label>
+
+                {/* Minimum runtime threshold */}
+                <div className={`flex flex-col gap-2 ${!settings.notificationsEnabled ? 'opacity-40 pointer-events-none' : ''}`}>
+                  <span className="text-sm">Minimum Runtime Threshold</span>
+                  <p className="text-[11px] text-[#666]">Only notify when a process has been running longer than this before it exits.</p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-xs text-[#666]">5s</span>
+                    <input
+                      type="range"
+                      min="5" max="120" step="5"
+                      value={settings.notificationMinRuntime}
+                      onChange={(e) => updateSettings({ notificationMinRuntime: parseInt(e.target.value) })}
+                      className="flex-1 accent-[var(--brand)]"
+                    />
+                    <span className="text-xs text-[#666]">120s</span>
+                    <span className="text-sm font-bold text-[var(--brand)] w-8 text-right">{settings.notificationMinRuntime}s</span>
+                  </div>
+                </div>
+
+                {/* How it works */}
+                <div className="mt-2 p-3 rounded-lg bg-[#252525] border border-[#333]">
+                  <h4 className="text-xs font-semibold text-[#aaa] mb-2">How to use</h4>
+                  <ul className="text-[11px] text-[#888] space-y-1.5">
+                    <li className="flex gap-2">
+                      <span className="text-[var(--brand)]">1.</span>
+                      Split your terminal (Ctrl+D) to create panes
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="text-[var(--brand)]">2.</span>
+                      Click the <span className="text-[var(--brand)]">eye icon</span> in a pane header to watch it
+                    </li>
+                    <li className="flex gap-2">
+                      <span className="text-[var(--brand)]">3.</span>
+                      Switch to another tab or app — you'll be notified when:
+                    </li>
+                    <li className="ml-5">• The pane receives a terminal bell (\a)</li>
+                    <li className="ml-5">• A long-running process exits</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'advanced' && (
+              <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-2">
+                  <label className="text-xs font-semibold uppercase tracking-wider text-[#888]">Autosuggest History</label>
+                  <p className="text-sm text-[#999] mb-2">
+                    Zeyt stores a local directory-scoped history of the commands you run to provide ghost-text autosuggestions.
+                  </p>
+                  <div>
+                    <button 
+                      onClick={async () => {
+                        try {
+                          const { invoke } = await import('@tauri-apps/api/core');
+                          await invoke('clear_history');
+                          alert('Command history cleared successfully.');
+                        } catch (e) {
+                          alert('Failed to clear history.');
+                        }
+                      }}
+                      className="px-4 py-2 bg-[#ff4444]/10 text-[#ff4444] border border-[#ff4444]/30 rounded hover:bg-[#ff4444]/20 transition-colors text-sm"
+                    >
+                      Clear Command History
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>

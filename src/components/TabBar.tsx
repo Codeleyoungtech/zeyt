@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAppStore } from '../lib/store';
 
 export default function TabBar() {
-  const { tabs, activeTabId, addTab, closeTab, setActiveTab, updateTabTitle, closePane, splitPane } = useAppStore();
+  const { tabs, activeTabId, addTab, closeTab, setActiveTab, updateTabTitle, closePane, splitPane, badgedTabIds } = useAppStore();
   const [editingId, setEditingId] = useState<string | null>(null);
 
   // Global keyboard shortcuts for tabs
@@ -43,6 +43,7 @@ export default function TabBar() {
       <div className="flex items-center h-full gap-1 w-full min-w-0">
         {tabs.map((tab) => {
           const isActive = tab.id === activeTabId;
+          const hasBadge = badgedTabIds.has(tab.id);
           return (
             <div
               key={tab.id}
@@ -80,6 +81,9 @@ export default function TabBar() {
                   tab.title
                 )}
               </div>
+              {hasBadge && (
+                <div className="w-2 h-2 rounded-full bg-[var(--brand)] shrink-0 animate-pulse mr-1" title="Notification" />
+              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation();

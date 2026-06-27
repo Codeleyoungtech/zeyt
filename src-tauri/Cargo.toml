@@ -1,6 +1,6 @@
 [package]
 name = "zeyt"
-version = "0.1.0"
+version = "0.1.1"
 description = "A fast, beautifully designed terminal for developers"
 authors = ["Eleyoungtech"]
 edition = "2021"
@@ -26,4 +26,5 @@ portable-pty = "0.8"
 uuid = { version = "1", features = ["v4"] }
 log = "0.4"
 tauri-plugin-dialog = "2.7.1"
+tauri-plugin-notification = "2.3.3"
 
