@@ -29,7 +29,7 @@ function WatchToggle({ paneId, className = "" }: { paneId: string, className?: s
       className={`w-5 h-5 flex items-center justify-center rounded transition-all ${
         isWatched
           ? 'text-[var(--brand)] opacity-100'
-          : 'text-[#888] hover:text-[var(--brand)]'
+          : 'text-[var(--text-muted)] hover:text-[var(--brand)]'
       } ${className}`}
       title={isWatched ? 'Stop watching this pane' : 'Watch this pane for notifications'}
     >
@@ -54,26 +54,26 @@ function PaneLeaf({ node, tabId, showHeader }: { node: Extract<PaneNode, { type:
   return (
     <div 
       className={`group relative w-full h-full flex flex-col overflow-hidden transition-colors border-2 ${
-        isActive ? 'border-[var(--brand)]' : 'border-[#222]'
+        isActive ? 'border-[var(--brand)]' : 'border-[var(--border-color)]'
       }`}
     >
       {showHeader ? (
         <PaneHeader paneId={node.id} tabId={tabId} cwd={node.cwd} onClose={() => closePane(node.id)} />
       ) : (
         <div className="absolute top-1 right-1 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <WatchToggle paneId={node.id} className="bg-[#222]/80 hover:bg-[#444]" />
+          <WatchToggle paneId={node.id} className="bg-[var(--bg-surface-3)]/80 hover:bg-[var(--border-focus)]" />
           <button
             onClick={(e) => { e.stopPropagation(); closePane(node.id); }}
-            className="w-5 h-5 flex items-center justify-center rounded hover:bg-[#444] bg-[#222]/80 transition-opacity"
+            className="w-5 h-5 flex items-center justify-center rounded hover:bg-[var(--border-focus)] bg-[var(--bg-surface-3)]/80 transition-opacity"
             title="Close Pane"
           >
-            <svg className="w-3 h-3 text-[#ccc]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg className="w-3 h-3 text-[var(--text-primary)]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
         </div>
       )}
-      <div className="flex-1 min-h-0 bg-[#1a1a1e]">
+      <div className="flex-1 min-h-0 bg-[var(--bg-base)]">
         <TerminalView tabId={tabId} paneId={node.id} initialCwd={node.cwd} />
       </div>
     </div>
@@ -139,7 +139,7 @@ export default function PaneTree({ node, tabId }: PaneTreeProps) {
           [isVertical ? 'width' : 'height']: `${ratio * 100}%`,
           [isVertical ? 'height' : 'width']: '100%'
         }}
-        className="relative"
+        className="relative overflow-hidden"
       >
         <PaneTree node={first} tabId={tabId} />
       </div>
@@ -148,12 +148,12 @@ export default function PaneTree({ node, tabId }: PaneTreeProps) {
         onPointerDown={handleDragStart}
         className={`bg-black z-10 hover:bg-[var(--brand)] transition-colors shrink-0 ${
           isVertical 
-            ? 'w-1 cursor-col-resize h-full border-x border-[#333333]' 
-            : 'h-1 cursor-row-resize w-full border-y border-[#333333]'
+            ? 'w-1 cursor-col-resize h-full border-x border-[var(--border-highlight)]' 
+            : 'h-1 cursor-row-resize w-full border-y border-[var(--border-highlight)]'
         }`}
       />
 
-      <div className="flex-1 relative">
+      <div className="flex-1 relative overflow-hidden">
         <PaneTree node={second} tabId={tabId} />
       </div>
     </div>
@@ -176,7 +176,7 @@ function PaneHeader({ paneId, tabId, cwd, onClose }: { paneId: string; tabId: st
 
   return (
     <div className={`h-6 flex items-center justify-between px-2 shrink-0 select-none text-[10px] transition-colors ${
-      isActive ? 'bg-[#2a2a2a] text-[#ccc]' : 'bg-[#1a1a1a] text-[#666]'
+      isActive ? 'bg-[var(--bg-surface-2)] text-[var(--text-primary)]' : 'bg-[var(--bg-surface-1)] text-[var(--text-dark)]'
     }`}>
       <div className="flex items-center gap-1.5 truncate">
         <svg className="w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -189,7 +189,7 @@ function PaneHeader({ paneId, tabId, cwd, onClose }: { paneId: string; tabId: st
         {/* Close button */}
         <button
           onClick={(e) => { e.stopPropagation(); onClose(); }}
-          className="w-4 h-4 flex items-center justify-center rounded hover:bg-[#444] transition-opacity opacity-0 group-hover:opacity-100"
+          className="w-4 h-4 flex items-center justify-center rounded hover:bg-[var(--border-focus)] transition-opacity opacity-0 group-hover:opacity-100"
         >
           <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
             <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />

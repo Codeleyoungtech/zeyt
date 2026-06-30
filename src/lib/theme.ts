@@ -145,6 +145,8 @@ export interface Settings {
   notificationsEnabled: boolean;
   notificationMinRuntime: number; // seconds — only notify on exit if process ran longer than this
   smartCtrlC: boolean;
+  destructiveWarnings: boolean;
+  promptStyle: 'default' | 'minimal' | 'path' | 'symbol';
 }
 
 export const defaultSettings: Settings = {
@@ -157,4 +159,6 @@ export const defaultSettings: Settings = {
   notificationsEnabled: true,
   notificationMinRuntime: 10,
   smartCtrlC: true,
+  destructiveWarnings: true,
+  promptStyle: 'default',
 };

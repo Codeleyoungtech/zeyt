@@ -60,7 +60,7 @@ export default function Titlebar() {
     <div className="flex items-center gap-1.5 pr-2">
       <button
         onClick={() => appWindow.minimize()}
-        className="w-8 h-8 flex items-center justify-center rounded-md text-[#cccccc] hover:bg-[#333333] hover:text-white transition-colors"
+        className="w-8 h-8 flex items-center justify-center rounded-md text-[var(--text-primary)] hover:bg-[var(--border-highlight)] hover:text-white transition-colors"
       >
         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -68,7 +68,7 @@ export default function Titlebar() {
       </button>
       <button
         onClick={() => appWindow.toggleMaximize()}
-        className="w-8 h-8 flex items-center justify-center rounded-md text-[#cccccc] hover:bg-[#333333] hover:text-white transition-colors"
+        className="w-8 h-8 flex items-center justify-center rounded-md text-[var(--text-primary)] hover:bg-[var(--border-highlight)] hover:text-white transition-colors"
       >
         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
@@ -76,7 +76,7 @@ export default function Titlebar() {
       </button>
       <button
         onClick={() => appWindow.close()}
-        className="w-8 h-8 flex items-center justify-center rounded-md text-[#cccccc] hover:bg-[#e81123] hover:text-white transition-colors"
+        className="w-8 h-8 flex items-center justify-center rounded-md text-[var(--text-primary)] hover:bg-[#e81123] hover:text-white transition-colors"
       >
         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -89,7 +89,7 @@ export default function Titlebar() {
   return (
     <div
       onPointerDown={handleDrag}
-      className="h-[38px] flex items-center shrink-0 w-full select-none bg-[#1e1e1e] border-b border-[#333333]"
+      className="h-[38px] flex items-center shrink-0 w-full select-none bg-[var(--bg-surface-2)] border-b border-[var(--border-highlight)]"
     >
       {isMac && (
         <div className="pl-2 h-full flex items-center">
@@ -98,7 +98,7 @@ export default function Titlebar() {
       )}
       
       <div 
-        className="flex-1 h-full flex justify-center items-center text-[#999999] text-xs font-medium cursor-default gap-2"
+        className="flex-1 h-full flex justify-center items-center text-[var(--text-secondary)] text-xs font-medium cursor-default gap-2"
       >
         {activeWorkspaceId && workspaceName ? (
           <>

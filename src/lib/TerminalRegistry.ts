@@ -1,7 +1,10 @@
 import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import { LigaturesAddon } from "@xterm/addon-ligatures";
+import { WebLinksAddon } from "@xterm/addon-web-links";
+import { SearchAddon } from "@xterm/addon-search";
 import { spawnPty, writePty, resizePty, killPty, onPtyOutput } from "./ptyClient";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { sendPaneNotification } from "./notifications";
 import { themes, Settings } from "./theme";
 import { invoke } from '@tauri-apps/api/core';
@@ -11,6 +14,7 @@ import { useAppStore } from "./store";
 export interface TerminalInstance {
   terminal: Terminal;
   fitAddon: FitAddon;
+  searchAddon: SearchAddon;
   domElement: HTMLElement;
   ghostElement: HTMLElement;
   ptyId: string | null;
@@ -54,7 +58,9 @@ export const TerminalRegistry = {
     // Important: we don't apply paddings here if the parent does, but we can just use 100%
 
     const fitAddon = new FitAddon();
+    const searchAddon = new SearchAddon();
     terminal.loadAddon(fitAddon);
+    terminal.loadAddon(searchAddon);
 
     terminal.open(domElement);
 
@@ -65,6 +71,13 @@ export const TerminalRegistry = {
     } catch (err) {
       console.warn("Failed to load ligatures addon:", err);
     }
+
+    // WebLinks addon
+    const webLinksAddon = new WebLinksAddon((event, uri) => {
+      event.preventDefault();
+      openUrl(uri).catch((err: any) => console.error("Failed to open URL:", err));
+    });
+    terminal.loadAddon(webLinksAddon);
 
     const ghostElement = document.createElement("div");
     ghostElement.style.position = "absolute";
@@ -87,6 +100,7 @@ export const TerminalRegistry = {
     const instance: TerminalInstance = {
       terminal,
       fitAddon,
+      searchAddon,
       domElement: containerElement,
       ghostElement,
       ptyId: null,
@@ -154,8 +168,9 @@ export const TerminalRegistry = {
         }
       }
 
-      // Paste
+      // Paste (Ctrl+Shift+V or Cmd+V or Ctrl+V)
       if ((!isMac && event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'v') || 
+          (!isMac && event.ctrlKey && !event.shiftKey && event.key.toLowerCase() === 'v') ||
           (isMac && event.metaKey && event.key.toLowerCase() === 'v')) {
         if (event.type === 'keydown') {
           navigator.clipboard.readText().then((text) => {
@@ -164,13 +179,24 @@ export const TerminalRegistry = {
               writePty(instance.ptyId, encoder.encode(text));
             }
           }).catch(err => console.error("Paste failed:", err));
-          return false;
         }
+        return false;
       }
 
       const mod = isMac ? event.metaKey : event.ctrlKey;
       if (mod) {
         const key = event.key.toLowerCase();
+        
+        // Terminal Search (Ctrl+F or Cmd+F)
+        if (key === 'f') {
+          if (event.type === 'keydown') {
+            event.preventDefault();
+            event.stopPropagation();
+            useAppStore.getState().setSearchPane(paneId);
+          }
+          return false;
+        }
+
         if (['t', 'w', 'd', 'k', ','].includes(key) || (key >= '1' && key <= '9')) {
           if (event.type === 'keydown') {
             event.preventDefault();
@@ -278,7 +304,7 @@ export const TerminalRegistry = {
 
     (async () => {
       try {
-        instance.ptyId = await spawnPty(initialCwd || ".");
+        instance.ptyId = await spawnPty(initialCwd || ".", settings.promptStyle);
         if (instance.disposed) {
           killPty(instance.ptyId);
           return;

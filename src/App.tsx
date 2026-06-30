@@ -8,6 +8,15 @@ import { useAppStore, PaneNode } from "./lib/store";
 import { useEffect } from "react";
 import { TerminalRegistry } from "./lib/TerminalRegistry";
 import { ensureNotificationPermission, setupNotificationFocusListener } from "./lib/notifications";
+import { themes } from "./lib/theme";
+
+function getLuminance(hex: string) {
+  const rgb = parseInt(hex.replace('#', ''), 16);
+  const r = (rgb >> 16) & 0xff;
+  const g = (rgb >>  8) & 0xff;
+  const b = (rgb >>  0) & 0xff;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
 
 export default function App() {
   const appWindow = getCurrentWindow();
@@ -50,9 +59,29 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [toggleWorkspaceSwitcher, toggleSettings, settings?.workspaceSwitcherMode]);
 
-  // Terminal Settings Update
+  // Terminal Settings & Global App UI Update
   useEffect(() => {
     TerminalRegistry.updateSettings(settings);
+    
+    // Global UI Sync
+    const currentTheme = themes[settings.themeId] || themes['default'];
+    const root = document.documentElement;
+    
+    // Derive UI mix color based on luminance
+    const isLight = getLuminance(currentTheme.colors.background) > 128;
+    
+    root.style.setProperty('--app-bg', currentTheme.colors.background);
+    root.style.setProperty('--app-fg', currentTheme.colors.foreground);
+    
+    // For dark themes, mix with white to increase lightness for surface levels.
+    // For light themes, mix with black to decrease lightness for surface levels.
+    root.style.setProperty('--ui-bg-mix', isLight ? 'black' : 'white');
+    root.style.setProperty('--ui-border-mix', isLight ? 'black' : 'white');
+    
+    // Apply user font to the entire UI
+    root.style.setProperty('--font-sans', settings.fontFamily);
+    root.style.setProperty('--font-mono', settings.fontFamily);
+    
   }, [settings]);
 
   // Terminal Garbage Collection
@@ -97,11 +126,12 @@ export default function App() {
       <div className="absolute bottom-0 right-0 w-3 h-3 cursor-se-resize z-50" onPointerDown={handleResize('SouthEast')} />
 
       {/* Main App Container */}
-      <div className="flex-1 w-full flex flex-row min-h-0 border border-[#333333] rounded-lg overflow-hidden">
-        {settings?.workspaceSwitcherMode === 'sidebar' && <WorkspaceSidebar />}
-        <div className="flex-1 h-full flex flex-col bg-[#1a1a1e] min-w-0">
-          <Titlebar />
-          <TabBar />
+      <div className="flex-1 w-full flex flex-col min-h-0 overflow-hidden bg-[var(--bg-base)]">
+        <Titlebar />
+        <div className="flex-1 w-full flex flex-row min-h-0">
+          {settings?.workspaceSwitcherMode === 'sidebar' && <WorkspaceSidebar />}
+          <div className="flex-1 h-full flex flex-col min-w-0">
+            <TabBar />
           <div className="flex-1 w-full min-h-0 relative">
             {tabs.map(tab => (
               <div 
@@ -115,6 +145,7 @@ export default function App() {
                 <PaneTree node={tab.root} tabId={tab.id} />
               </div>
             ))}
+          </div>
           </div>
         </div>
       </div>

@@ -5,8 +5,8 @@ import { listen, type UnlistenFn } from "@tauri-apps/api/event";
  * Spawn a new PTY process in the given working directory.
  * Returns the unique PTY identifier.
  */
-export async function spawnPty(cwd: string): Promise<string> {
-  return invoke<string>("spawn_pty", { cwd });
+export async function spawnPty(cwd: string, promptStyle: string = 'default'): Promise<string> {
+  return invoke<string>("spawn_pty", { cwd, promptStyle });
 }
 
 /**

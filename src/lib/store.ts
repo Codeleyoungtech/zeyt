@@ -31,6 +31,7 @@ interface AppState {
   settings: Settings;
   isSettingsOpen: boolean;
   isWorkspaceSwitcherOpen: boolean;
+  searchPaneId: string | null;
   badgedTabIds: Set<string>;
   
   addTab: () => void;
@@ -44,6 +45,7 @@ interface AppState {
   closePane: (paneId: string) => void;
   updateSplitRatio: (splitId: string, newRatio: number) => void;
   updatePaneCwd: (paneId: string, cwd: string) => void;
+  setSearchPane: (paneId: string | null) => void;
 
   // Settings
   toggleSettings: () => void;
@@ -117,6 +119,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   settings: defaultSettings,
   isSettingsOpen: false,
   isWorkspaceSwitcherOpen: false,
+  searchPaneId: null,
   badgedTabIds: new Set<string>(),
 
   // ── Tab actions ──────────────────────────────────────────
@@ -252,6 +255,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     })
   })),
 
+  setSearchPane: (paneId) => set({ searchPaneId: paneId }),
+
   // ── Settings ─────────────────────────────────────────────
   toggleSettings: () => set(state => ({ isSettingsOpen: !state.isSettingsOpen })),
   toggleWorkspaceSwitcher: () => set(state => ({ isWorkspaceSwitcherOpen: !state.isWorkspaceSwitcherOpen })),
@@ -261,6 +266,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       const json = await invoke<string>('load_settings');
       if (json && json !== '{}') {
         const saved = JSON.parse(json);
+        if (saved.cursorStyle === 'line') saved.cursorStyle = 'bar'; // Migration
         set(state => ({ settings: { ...state.settings, ...saved } }));
       }
     } catch (err) {

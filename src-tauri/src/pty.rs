@@ -23,7 +23,7 @@ static PTY_REGISTRY: LazyLock<Mutex<HashMap<String, PtySession>>> =
 /// The shell is determined from $SHELL, falling back to /bin/bash.
 /// A background thread reads output and emits `pty-output-{id}` events with `Vec<u8>` payloads.
 #[tauri::command]
-pub fn spawn_pty(app: tauri::AppHandle, cwd: String) -> Result<String, String> {
+pub fn spawn_pty(app: tauri::AppHandle, cwd: String, prompt_style: String) -> Result<String, String> {
     let id = Uuid::new_v4().to_string();
 
     let shell = std::env::var("SHELL").unwrap_or_else(|_| "/bin/bash".to_string());
@@ -46,6 +46,8 @@ pub fn spawn_pty(app: tauri::AppHandle, cwd: String) -> Result<String, String> {
     cmd.env("TERM", "xterm-256color");
     cmd.env("COLORTERM", "truecolor");
 
+
+
     let child = pair
         .slave
         .spawn_command(cmd)
@@ -59,10 +61,23 @@ pub fn spawn_pty(app: tauri::AppHandle, cwd: String) -> Result<String, String> {
         .try_clone_reader()
         .map_err(|e| format!("Failed to clone reader: {}", e))?;
 
-    let writer = pair
+    let mut writer = pair
         .master
         .take_writer()
         .map_err(|e| format!("Failed to take writer: {}", e))?;
+
+    // Inject prompt override if requested
+    if prompt_style != "default" {
+        let cmd = match prompt_style.as_str() {
+            "minimal" => " export PS1='\\W ❯ '; export PROMPT='%1~ ❯ '; clear\r",
+            "path" => " export PS1='\\w ❯ '; export PROMPT='%~ ❯ '; clear\r",
+            "symbol" => " export PS1='❯ '; export PROMPT='❯ '; clear\r",
+            _ => "",
+        };
+        if !cmd.is_empty() {
+            let _ = writer.write_all(cmd.as_bytes());
+        }
+    }
 
     // Store session in registry
     {
@@ -82,7 +97,7 @@ pub fn spawn_pty(app: tauri::AppHandle, cwd: String) -> Result<String, String> {
     let event_id = id.clone();
     let spawn_instant = Instant::now();
     std::thread::spawn(move || {
-        let mut buf = [0u8; 4096];
+        let mut buf = [0u8; 65536];
         loop {
             match reader.read(&mut buf) {
                 Ok(0) => break, // EOF
